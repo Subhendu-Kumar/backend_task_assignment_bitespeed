@@ -1,0 +1,41 @@
+generator client {
+  provider             = "prisma-client-py"
+  recursive_type_depth = -1
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LinkPrecedence {
+  primary
+  secondary
+}
+
+model Contact {
+  id             Int            @id @default(autoincrement())
+  phoneNumber    String?
+  email          String?
+  linkedId       Int?
+  linkPrecedence LinkPrecedence @default(primary)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  deletedAt      DateTime?
+
+  linkedContact Contact?  @relation("ContactToContact", fields: [linkedId], references: [id])
+  childContacts Contact[] @relation("ContactToContact")
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([linkedId])
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
